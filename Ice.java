@@ -1,6 +1,7 @@
 import java.io.*;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Random;
 import java.util.Set;
 
 public class Ice {
@@ -12,7 +13,7 @@ public class Ice {
             System.err.println("Invalid Input: Please enter numbers.");
         }
         HashMap<String, Integer> data = new HashMap<>();
-        File file = new File("src/data.txt");
+        File file = new File("data.txt");
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             String line;
@@ -193,19 +194,14 @@ public class Ice {
             int iterations = Integer.parseInt(args[2]);
             double beta0 = 0;
             double beta1 = 0;
-
             for(int i = 1; i <= iterations; i++) {
                 double mse = 0;
-                double mse1 = 0;
-                double mse2 = 0;
-                for (String yearString : years) {
-                    double year = Integer.parseInt(yearString);
-                    year = (year - yearMean) / standardDeviationYear;
-                    mse1 += beta0 + (beta1 * year) - data.get(yearString);
-                    mse2 += (beta0 + (beta1 * year) - data.get(yearString)) * year;
-                }
-                mse1 = 2 * mse1 / n;
-                mse2 = 2 * mse2 / n;
+                String randKey = randomValueFromSet(years);
+                Double randX = Double.parseDouble(randKey);
+                randX = (randX - yearMean) / standardDeviationYear;
+                Integer randY = data.get(randKey);
+                double mse1 = 2 * (beta0 + (beta1 * randX) - randY);
+                double mse2 = 2 * randX * (beta0 + (beta1 * randX) - randY);
                 beta0 = beta0 - (gradient * mse1);
                 beta1 = beta1 - (gradient * mse2);
 
@@ -220,5 +216,17 @@ public class Ice {
                         " " + String.format("%.2f", mse));
             }
         }
+    }
+    private static String randomValueFromSet(Set<String> set) {
+        int size = set.size();
+        int item = new Random().nextInt(size);
+        int i = 0;
+        for(String obj : set)
+        {
+            if (i == item)
+                return obj;
+            i++;
+        }
+        return "";
     }
 }
