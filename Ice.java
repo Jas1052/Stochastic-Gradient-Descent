@@ -12,7 +12,7 @@ public class Ice {
             System.err.println("Invalid Input: Please enter numbers.");
         }
         HashMap<String, Integer> data = new HashMap<>();
-        File file = new File("data.txt");
+        File file = new File("src/data.txt");
         try {
             BufferedReader reader = new BufferedReader(new FileReader(file));
             String line;
@@ -46,6 +46,18 @@ public class Ice {
             varianceSum += Math.pow(days - mean, 2);
         }
         double standardDeviation = Math.sqrt(varianceSum / (n - 1));
+
+        double sumYear = 0;
+        for(String year : years) {
+            sumYear += Double.parseDouble(year);
+        }
+        double meanYear = sumYear / n;
+        int varianceSumYear = 0;
+        for(String year : years) {
+            varianceSumYear += Math.pow(Double.parseDouble(year) - meanYear, 2);
+        }
+        double standardDeviationYear = Math.sqrt(varianceSumYear / (n - 1));
+
         if(flag == 200) {
             System.out.println(n);
             System.out.println(String.format("%.2f", mean));
@@ -109,14 +121,15 @@ public class Ice {
             }
         }
 
+        int yearSum = 0;
+        for(String yearString : years) {
+            yearSum += Integer.parseInt(yearString);
+        }
+
+        double yearMean = yearSum / n;
         if(flag == 600 || flag == 700) {
             double beta1Numerator = 0;
             double beta1Denominator = 0;
-            int yearSum = 0;
-            for(String yearString : years) {
-                yearSum += Integer.parseInt(yearString);
-            }
-            double yearMean = yearSum / n;
             for(String yearString : years) {
                 int year = Integer.parseInt(yearString);
                 beta1Numerator += (year - yearMean) * (data.get(yearString) - mean);
@@ -135,11 +148,76 @@ public class Ice {
                 System.out.println(String.format("%.2f", beta0) + " " + String.format("%.2f", beta1) + " "
                         + String.format("%.2f", mse));
             }
-
             if(flag == 700) {
                 double yearPredict = Double.parseDouble(args[1]);
                 double prediction = beta0 + (beta1 * yearPredict);
                 System.out.println(String.format("%.2f", prediction));
+            }
+        }
+
+        if(flag == 800) {
+            double gradient = Double.parseDouble(args[1]);
+            int iterations = Integer.parseInt(args[2]);
+            double beta0 = 0;
+            double beta1 = 0;
+
+            for(int i = 1; i <= iterations; i++) {
+                double mse = 0;
+                double mse1 = 0;
+                double mse2 = 0;
+                for (String yearString : years) {
+                    double year = Integer.parseInt(yearString);
+                    year = (year - yearMean) / standardDeviationYear;
+                    mse1 += beta0 + (beta1 * year) - data.get(yearString);
+                    mse2 += (beta0 + (beta1 * year) - data.get(yearString)) * year;
+                }
+                mse1 = 2 * mse1 / n;
+                mse2 = 2 * mse2 / n;
+                beta0 = beta0 - (gradient * mse1);
+                beta1 = beta1 - (gradient * mse2);
+
+                for (String yearString : years) {
+                    double year = Integer.parseInt(yearString);
+                    year = (year - yearMean) / standardDeviationYear;
+                    mse += Math.pow(beta0 + (beta1 * year) -  data.get(yearString), 2);
+                }
+                mse = mse / n;
+
+                System.out.println(i + " " + String.format("%.2f", beta0) + " " + String.format("%.2f", beta1) +
+                        " " + String.format("%.2f", mse));
+            }
+        }
+
+        if(flag == 900) {
+            double gradient = Double.parseDouble(args[1]);
+            int iterations = Integer.parseInt(args[2]);
+            double beta0 = 0;
+            double beta1 = 0;
+
+            for(int i = 1; i <= iterations; i++) {
+                double mse = 0;
+                double mse1 = 0;
+                double mse2 = 0;
+                for (String yearString : years) {
+                    double year = Integer.parseInt(yearString);
+                    year = (year - yearMean) / standardDeviationYear;
+                    mse1 += beta0 + (beta1 * year) - data.get(yearString);
+                    mse2 += (beta0 + (beta1 * year) - data.get(yearString)) * year;
+                }
+                mse1 = 2 * mse1 / n;
+                mse2 = 2 * mse2 / n;
+                beta0 = beta0 - (gradient * mse1);
+                beta1 = beta1 - (gradient * mse2);
+
+                for (String yearString : years) {
+                    double year = Integer.parseInt(yearString);
+                    year = (year - yearMean) / standardDeviationYear;
+                    mse += Math.pow(beta0 + (beta1 * year) -  data.get(yearString), 2);
+                }
+                mse = mse / n;
+
+                System.out.println(i + " " + String.format("%.2f", beta0) + " " + String.format("%.2f", beta1) +
+                        " " + String.format("%.2f", mse));
             }
         }
     }
